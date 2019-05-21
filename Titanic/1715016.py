@@ -67,7 +67,9 @@ def find_NaN(feature):
     feature_size = feature_ratio.size
     feature_index = feature_ratio.index
 
-    print("feature_index = "+feature_index)
+# main function
+def main():
+    dataPreprocessing()
 
 
 col = train.columns
