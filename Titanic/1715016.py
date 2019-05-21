@@ -43,10 +43,6 @@ def pie_chart(feature):
     survived = train[train['Survived'] == 1][feature].value_counts()
     dead = train[train['Survived'] == 0][feature].value_counts()
 
-    plt.plot(aspect='auto')
-    plt.pie(feature_ratio, labels=feature_index, autopct='%1.1f%%')
-    plt.title(feature + '\'s ratio in total')
-    plt.show()
 
 # z function
 def z():
@@ -59,13 +55,6 @@ def Logistic_Regression():
     else:
         return 0
 '''
-# pie_chart('Embarked')
-
-
-def find_NaN(feature):
-    feature_ratio = train[feature].value_counts(sort=False)
-    feature_size = feature_ratio.size
-    feature_index = feature_ratio.index
 
 # main function
 def main():
