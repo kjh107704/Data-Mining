@@ -36,12 +36,10 @@ def dataPreprocessing():
 # define number of attributes
 num = 1
 '''
-def pie_chart(feature):
-    feature_ratio = train[feature].value_counts(sort=False)
-    feature_size = feature_ratio.size
-    feature_index = feature_ratio.index
-    survived = train[train['Survived'] == 1][feature].value_counts()
-    dead = train[train['Survived'] == 0][feature].value_counts()
+# define initial value of w
+initial_value_of_w = 0.1
+W = np.array([initial_value_of_w for _ in range(num)], dtype='f')
+X = np.array()
 
 
 # z function
