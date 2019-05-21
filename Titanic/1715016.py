@@ -52,7 +52,12 @@ def pie_chart(feature):
 def z():
     return np.sum(np.multiply(W, X))
 
-    plt.show()
+# Logistic Regression Function
+def Logistic_Regression():
+    if (1 / 1 + np.exp(-z()) >= 0.5):
+        return 1
+    else:
+        return 0
 '''
 # pie_chart('Embarked')
 
