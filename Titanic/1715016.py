@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 plt.show()
 sns.set()
 
+# read csv files
 train = pd.read_csv(sys.argv[1])
 test = pd.read_csv(sys.argv[2])
 
