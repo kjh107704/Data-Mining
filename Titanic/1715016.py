@@ -10,6 +10,31 @@ sns.set()
 train = pd.read_csv(sys.argv[1])
 test = pd.read_csv(sys.argv[2])
 
+# data preprocessing
+def dataPreprocessing():
+    print("print train.shape")
+    print(train.shape)
+    train_columns = train.columns
+    print("print data columns")
+    print(train_columns)
+    print("number of columns")
+    print(train_columns.size)
+    print(train[train_columns[2]].head())
+
+
+    for i in range(train_columns.size):
+        print("\n" + train_columns[i] + "\'s Data")
+        print(train[train_columns[i]].unique())
+        print("\n"+ train_columns[i] + "\'s NaN")
+        print("before dropna: ")
+        print(train[train_columns[i]].size)
+        
+        print("after dropna: ")
+        print(train[train_columns[i]].dropna().size)
+
+
+# define number of attributes
+num = 1
 '''
 def pie_chart(feature):
     feature_ratio = train[feature].value_counts(sort=False)
