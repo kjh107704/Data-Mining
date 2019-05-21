@@ -72,5 +72,4 @@ def main():
     dataPreprocessing()
 
 
-col = train.columns
-print(col[1])
+main()
