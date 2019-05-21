@@ -48,11 +48,9 @@ def pie_chart(feature):
     plt.title(feature + '\'s ratio in total')
     plt.show()
 
-    for i, index in enumerate(feature_index):
-        plt.subplot(1, feature_size + 1, i + 1, aspect='equal')
-        plt.pie([survived[index], dead[index]], labels=[
-                'Survived', 'Dead'], autopct='%1.1f%%')
-        plt.title(str(index) + '\'s ratio')
+# z function
+def z():
+    return np.sum(np.multiply(W, X))
 
     plt.show()
 '''
