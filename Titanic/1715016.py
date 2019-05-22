@@ -2,10 +2,7 @@ import seaborn as sns
 import sys
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import OneHotEncoder
-import matplotlib.pyplot as plt
-plt.show()
-sns.set()
+import random
 
 # read csv files
 train = pd.read_csv(sys.argv[1])
@@ -22,6 +19,20 @@ def add_age(cols):  # impute average age values to null age values
         return Age
 
 
+def MappingAge(cols):
+    Age = cols[0]
+    if Age <= 16:
+        return 0
+    elif Age > 16 and Age <= 26:
+        return 1
+    elif Age > 26 and Age <= 36:
+        return 2
+    elif Age > 36 and Age <= 62:
+        return 3
+    else:
+        return 4
+
+
 def add_embarked(cols):  # impute S to null Embarked values
     Embarked = cols[0]
     if pd.isnull(Embarked):
@@ -33,11 +44,11 @@ def add_embarked(cols):  # impute S to null Embarked values
 def MappingEmbarked(cols):  # mapping Embarked values to number
     Embarked = cols[0]
     if Embarked == 'S':
-        return 3
+        return 0
     elif Embarked == 'C':
-        return 2
-    else:
         return 1
+    else:
+        return 2
 
 
 def AppendFamily(cols):  # calculate and append Family = SibSp + Parch
@@ -55,12 +66,37 @@ def AppendFamily(cols):  # calculate and append Family = SibSp + Parch
         return Parch+SibSp
 
 
+def addFare(cols):
+    Fare = cols[0]
+    Pclass = cols[1]
+    if pd.isnull(Fare):
+        return int(data[data["Pclass"] == Pclass]["Fare"].mean())
+    else:
+        return Fare
+
+
 def LogFare(cols):  # log to Fare
     Fare = cols[0]
-    if Fare > 0:
-        return np.log(Fare)
-    else:
+    if Fare <= 17:
         return 0
+    elif Fare > 17 and Fare <= 30:
+        return 1
+    elif Fare > 30 and Fare <= 100:
+        return 2
+    else:
+        return 3
+
+
+def MappingTitle(cols):
+    Title = cols[0]
+    if Title == "Miss":
+        return 1
+    elif Title == "Mr":
+        return 0
+    elif Title == "Mrs":
+        return 2
+    else:
+        return 3
 
 
 def dataPreprocessing(dataSet):  # dataPreprocessing
@@ -68,11 +104,11 @@ def dataPreprocessing(dataSet):  # dataPreprocessing
     # preprocessing Age
     # impute average age values to null age values
     dataSet["Age"] = dataSet[["Age", "Pclass"]].apply(add_age, axis=1)
-
+    dataSet["Age"] = dataSet[["Age"]].apply(MappingAge, axis=1)
     # preprocessing Embarked
     # impute S to null Embarked values
     dataSet["Embarked"] = dataSet[["Embarked"]].apply(add_embarked, axis=1)
-    # mapping Embarked values to number
+    # mapping Embarked values to number(1 to 3)
     dataSet["Embarked"] = dataSet[["Embarked"]].apply(MappingEmbarked, axis=1)
 
     # preprocessing SibSp, Parch
@@ -81,6 +117,7 @@ def dataPreprocessing(dataSet):  # dataPreprocessing
 
     # preprocessing Fare
     # log to Fare
+    dataSet["Fare"] = dataSet[["Fare", "Pclass"]].apply(addFare, axis=1)
     dataSet["Fare"] = dataSet[["Fare"]].apply(LogFare, axis=1)
 
     # preprocessing Sex
@@ -88,6 +125,11 @@ def dataPreprocessing(dataSet):  # dataPreprocessing
     sex = pd.get_dummies(dataSet["Sex"], drop_first=True)
     dataSet = pd.concat([dataSet, sex], axis=1)
 
+    # preprocessing Name
+    # extract Title from Name
+    dataSet["Title"] = dataSet.Name.str.extract(' ([A-Za-z]+)\.')
+    # mapping Title values to number(1 to 5)
+    dataSet["Title"] = dataSet[["Title"]].apply(MappingTitle, axis=1)
     # drop attribute
     dataSet.drop(["Cabin", "PassengerId",  "Name", "Sex", "Ticket",
                   "SibSp", "Parch"], axis=1, inplace=True)
@@ -99,14 +141,19 @@ def z(W, X):  # return z
     return 1.0 / (1.0 + np.exp(-z))
 
 
-def CostFunction(W, X, y, m, a, cnt):  # update W for cnt times
+def CostFunction(W, X, y, m, learning_rate, cnt):  # update W for cnt times
     for i in range(cnt):
-        hx = z(W, X)
-        error = hx - y
-        grad = X.T.dot(error)
-        grad = grad*((1.0 / m))
-        W[0] = W[0] - a * error.sum()
-        W[1:] = W[1:] - a * grad
+        # compute the partial derivative w.r.t wi
+        # comput hx - y
+        error = z(W, X)-y
+        derivative = np.array([error.sum()])
+        sigma = X.T.dot(error)
+        derivative = np.append(derivative, sigma)
+        # result of partial derivative w.r.t wi
+        derivative = derivative * (1.0 / m)
+
+        # update wi
+        W = W - learning_rate * derivative
         print("iteration = "+str(i))
         print(W)
     return W
@@ -128,10 +175,12 @@ def Logistic_Regression(W, test):  # Logistic Regression Function
 def main():  # main function
 
     # define number of attributes
-    num = 6
+    num = 7
 
     # define initial value of w
-    initial_value_of_w = 0
+    initial_value_of_w = random.uniform(-1, 1)
+    learning_rate = 0.001
+    iteration = 100000
     W = np.array([initial_value_of_w for _ in range(num+1)], dtype='f')
 
     # dataPreprocessing
@@ -141,7 +190,8 @@ def main():  # main function
     # make train X, y data
     train_X = train.drop("Survived", axis=1)
     train_y = train["Survived"]
-    W = CostFunction(W, train_X, train_y, train_y.size, 0.001, 100000)
+    W = CostFunction(W, train_X, train_y, train_y.size,
+                     learning_rate, iteration)
 
     global test
     global data
@@ -157,6 +207,7 @@ def main():  # main function
     result_data["Survived"] = result_data[[
         "Survived"]].apply(MappingResult, axis=1)
     result_data.to_csv("1715016.csv", mode='w')
+    print("initial value of w = "+str(initial_value_of_w))
 
 
 main()
