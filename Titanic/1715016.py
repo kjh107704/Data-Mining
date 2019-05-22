@@ -19,7 +19,7 @@ def add_age(cols):  # impute average age values to null age values
         return Age
 
 
-def MappingAge(cols):
+def MappingAge(cols):  # mapping Age values
     Age = cols[0]
     if Age <= 16:
         return 0
@@ -41,7 +41,7 @@ def add_embarked(cols):  # impute S to null Embarked values
         return Embarked
 
 
-def MappingEmbarked(cols):  # mapping Embarked values to number
+def MappingEmbarked(cols):  # mapping string type of Embarked to integer
     Embarked = cols[0]
     if Embarked == 'S':
         return 0
@@ -51,7 +51,7 @@ def MappingEmbarked(cols):  # mapping Embarked values to number
         return 2
 
 
-def AppendFamily(cols):  # calculate and append Family = SibSp + Parch
+def AppendFamily(cols):  # append Family = SibSp + Parch
     SibSp = cols[0]
     Parch = cols[1]
 
@@ -66,7 +66,7 @@ def AppendFamily(cols):  # calculate and append Family = SibSp + Parch
         return Parch+SibSp
 
 
-def addFare(cols):
+def addFare(cols):  # impute average Fare values to null Fare values
     Fare = cols[0]
     Pclass = cols[1]
     if pd.isnull(Fare):
@@ -75,7 +75,7 @@ def addFare(cols):
         return Fare
 
 
-def LogFare(cols):  # log to Fare
+def MappingFare(cols):  # mapping Fare values
     Fare = cols[0]
     if Fare <= 17:
         return 0
@@ -87,7 +87,7 @@ def LogFare(cols):  # log to Fare
         return 3
 
 
-def MappingTitle(cols):
+def MappingTitle(cols):  # mapping string type of Title to integer
     Title = cols[0]
     if Title == "Miss":
         return 1
@@ -118,7 +118,7 @@ def dataPreprocessing(dataSet):  # dataPreprocessing
     # preprocessing Fare
     # log to Fare
     dataSet["Fare"] = dataSet[["Fare", "Pclass"]].apply(addFare, axis=1)
-    dataSet["Fare"] = dataSet[["Fare"]].apply(LogFare, axis=1)
+    dataSet["Fare"] = dataSet[["Fare"]].apply(MappingFare, axis=1)
 
     # preprocessing Sex
     pd.get_dummies(dataSet["Sex"])
@@ -167,45 +167,53 @@ def MappingResult(cols):  # mapping z value to binary
         return 0
 
 
-def Logistic_Regression(W, test):  # Logistic Regression Function
+def Logistic_Regression(W, test, result_data):  # Logistic Regression Function
+    # compute z
     result = z(W, test)
-    return result
+    result_data["Survived"] = result
+    # mapping z values to binary
+    result_data["Survived"] = result_data[[
+        "Survived"]].apply(MappingResult, axis=1)
+    return result_data
 
 
 def main():  # main function
 
     # define number of attributes
     num = 7
-
     # define initial value of w
     initial_value_of_w = random.uniform(-1, 1)
+    # define learning rate
     learning_rate = 0.001
+    # define iteration
     iteration = 100000
+    # make array W(size = num+1)
     W = np.array([initial_value_of_w for _ in range(num+1)], dtype='f')
 
-    # dataPreprocessing
     global train
+    # Preprocessing training data
     train = dataPreprocessing(train)
 
     # make train X, y data
     train_X = train.drop("Survived", axis=1)
     train_y = train["Survived"]
+    # find W
     W = CostFunction(W, train_X, train_y, train_y.size,
                      learning_rate, iteration)
 
     global test
     global data
-
+    # make DataFrame of result_data
     result_data = pd.DataFrame(data=test['PassengerId'])
     result_data = result_data.set_index("PassengerId")
+    # Preprocessing test data
     data = test
     test = dataPreprocessing(test)
-    print(result_data.shape)
-    result = Logistic_Regression(W, test)
-    result_data["Survived"] = result
-    test = test.drop("male", axis=1)
-    result_data["Survived"] = result_data[[
-        "Survived"]].apply(MappingResult, axis=1)
+
+    # predict test data
+    result_data = Logistic_Regression(W, test, result_data)
+
+    # make result csv file
     result_data.to_csv("1715016.csv", mode='w')
     print("initial value of w = "+str(initial_value_of_w))
 
