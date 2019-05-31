@@ -1,4 +1,4 @@
-import seaborn as sns
+#import seaborn as sns
 import sys
 import pandas as pd
 import numpy as np
@@ -136,7 +136,7 @@ def dataPreprocessing(dataSet):  # dataPreprocessing
     return dataSet
 
 
-def z(W, X):  # return z
+def h(W, X):  # return h(X)
     z = np.dot(X, W[1:])+W[0]
     return 1.0 / (1.0 + np.exp(-z))
 
@@ -144,8 +144,8 @@ def z(W, X):  # return z
 def CostFunction(W, X, y, m, learning_rate, cnt):  # update W for cnt times
     for i in range(cnt):
         # compute the partial derivative w.r.t wi
-        # comput hx - y
-        error = z(W, X)-y
+        # comput h(X) - y
+        error = h(W, X)-y
         derivative = np.array([error.sum()])
         sigma = X.T.dot(error)
         derivative = np.append(derivative, sigma)
@@ -159,19 +159,19 @@ def CostFunction(W, X, y, m, learning_rate, cnt):  # update W for cnt times
     return W
 
 
-def MappingResult(cols):  # mapping z value to binary
-    _z = cols[0]
-    if _z >= 0.5:
+def MappingResult(cols):  # mapping h(X) value to binary
+    _h = cols[0]
+    if _h >= 0.5:
         return 1
     else:
         return 0
 
 
 def Logistic_Regression(W, test, result_data):  # Logistic Regression Function
-    # compute z
-    result = z(W, test)
+    # compute h(X)
+    result = h(W, test)
     result_data["Survived"] = result
-    # mapping z values to binary
+    # mapping h(X) values to binary
     result_data["Survived"] = result_data[[
         "Survived"]].apply(MappingResult, axis=1)
     return result_data
@@ -182,7 +182,7 @@ def main():  # main function
     # define number of attributes
     num = 7
     # define initial value of w
-    initial_value_of_w = random.uniform(-1, 1)
+    initial_value_of_w = 0.398496306091473
     # define learning rate
     learning_rate = 0.001
     # define iteration
